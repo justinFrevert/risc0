@@ -198,7 +198,7 @@ impl BuildCommand {
         if subcommand == BuildSubcommand::Test && !no_run_flag {
             eprintln!("Running tests: {tests:?}");
 
-            for {i, test} in tests.iter().enumerate() {
+            for (i, test) in tests.iter().enumerate() {
                 eprintln!("Running test in guest: {test} {test_args:?}");
                 let env = ExecutorEnv::builder()
                     // Add the test elf path as arg 0, the POSIX program name
