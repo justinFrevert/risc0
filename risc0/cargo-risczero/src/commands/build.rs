@@ -14,12 +14,14 @@
 
 use std::{fs, io, io::Write, path::PathBuf, process::Stdio};
 
-use anyhow::{anyhow, bail, ensure, Context};
+
+use anyhow::{anyhow, bail, Context};
 use cargo_metadata::{Artifact, ArtifactProfile, Message};
 use clap::Parser;
 use risc0_build::cargo_command;
-use risc0_zkvm::{default_executor, ExecutorEnv, ExitCode};
+use risc0_zkvm::{default_prover, ExecutorEnv};
 use tempfile::{tempdir, TempDir};
+use bincode::serialize;
 
 const ZIP_CONTENTS: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/cargo-risczero.zip"));
 
@@ -196,7 +198,7 @@ impl BuildCommand {
         if subcommand == BuildSubcommand::Test && !no_run_flag {
             eprintln!("Running tests: {tests:?}");
 
-            for test in tests {
+            for {i, test} in tests.iter().enumerate() {
                 eprintln!("Running test in guest: {test} {test_args:?}");
                 let env = ExecutorEnv::builder()
                     // Add the test elf path as arg 0, the POSIX program name
@@ -205,13 +207,16 @@ impl BuildCommand {
                     .env_var("RUST_TEST_NOCAPTURE", "1")
                     .build()?;
 
-                let exec = default_executor();
-                let session = exec.execute_elf(env, &fs::read(test)?)?;
-                ensure!(
-                    session.exit_code == ExitCode::Halted(0),
-                    "test exited with code {:?}",
-                    session.exit_code
-                );
+                let elf = fs::read(&test)?;
+
+                let prover = default_prover();
+                eprintln!("Proving session of {test} {test_args:?}");
+                let receipt = prover.prove_elf(env, &elf)?;
+                
+                let mut file = fs::File::create("proof-{i}.txt")?;
+                let serialized = serialize(&receipt)?;
+                file.write_all(&serialized)?;
+                eprintln!("Wrote proof to file proof-{i}.txt");
             }
         };
         Ok(())
