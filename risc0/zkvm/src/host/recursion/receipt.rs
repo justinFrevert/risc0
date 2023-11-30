@@ -27,6 +27,8 @@ use crate::{
     ReceiptMetadata,
 };
 
+use codec::{Decode, Encode};
+
 /// This function gets valid control IDs from the poseidon and recursion
 /// circuits
 pub fn valid_control_ids() -> Vec<Digest> {
@@ -43,7 +45,7 @@ pub fn valid_control_ids() -> Vec<Digest> {
 
 /// This struct represents a receipt for one or more [crate::SegmentReceipt]s
 /// joined through recursion.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct SuccinctReceipt {
     /// the cryptographic seal of this receipt

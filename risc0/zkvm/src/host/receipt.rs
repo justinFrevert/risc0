@@ -35,6 +35,8 @@ use risc0_zkp::{
 use risc0_zkvm_platform::WORD_SIZE;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
+use codec::{Decode, Encode};
+
 use super::control_id::{BLAKE2B_CONTROL_ID, POSEIDON_CONTROL_ID, SHA256_CONTROL_ID};
 // Make succinct receipt available through this `receipt` module.
 pub use super::recursion::SuccinctReceipt;
@@ -101,7 +103,7 @@ use crate::{
 /// [serde](crate::serde) module, which can be used to read data from the
 /// journal as the same type it was written to the journal. If you prefer, you
 /// can also directly access the [Receipt::journal] as a `Vec<u8>`.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Receipt {
     /// The polymorphic [InnerReceipt].
@@ -241,7 +243,7 @@ impl Receipt {
 }
 
 /// A journal is a record of all public commitments for a given proof session.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Encode, Decode)]
 pub struct Journal {
     /// The raw bytes of the journal.
     pub bytes: Vec<u8>,
@@ -272,7 +274,7 @@ impl AsRef<[u8]> for Journal {
 }
 
 /// An inner receipt can take the form of a [CompositeReceipt] or a [SuccinctReceipt].
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum InnerReceipt {
     /// A non-succinct [CompositeReceipt].
@@ -348,7 +350,7 @@ impl InnerReceipt {
 /// A receipt composed of one or more [SegmentReceipt] structs proving a single
 /// execution with continuations, and zero or more [Receipt] stucts proving any
 /// assumptions.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CompositeReceipt {
     /// Segment receipts forming the proof of a execution with continuations.
@@ -546,7 +548,7 @@ impl CompositeReceipt {
 ///
 /// A SegmentReceipt attests that a [crate::Segment] was executed in a manner
 /// consistent with the [ReceiptMetadata] included in the receipt.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct SegmentReceipt {
     /// The cryptographic data attesting to the validity of the code execution.

@@ -4273,6 +4273,7 @@ dependencies = [
  "lazy-regex",
  "num-derive",
  "num-traits",
+ "parity-scale-codec",
  "prost",
  "prost-build",
  "protoc-prebuilt",

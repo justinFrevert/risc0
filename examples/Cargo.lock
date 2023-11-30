@@ -1878,6 +1878,7 @@ name = "hello-world"
 version = "0.1.0"
 dependencies = [
  "hello-world-methods",
+ "parity-scale-codec",
  "risc0-zkvm",
  "serde",
 ]
@@ -3519,6 +3520,7 @@ version = "0.20.0-alpha.1"
 dependencies = [
  "anyhow",
  "elf",
+ "parity-scale-codec",
  "risc0-zkp",
  "risc0-zkvm-platform",
  "serde",
@@ -3636,6 +3638,7 @@ dependencies = [
  "lazy_static",
  "metal",
  "ndarray",
+ "parity-scale-codec",
  "paste",
  "rand",
  "rand_core",
@@ -3666,6 +3669,7 @@ dependencies = [
  "lazy-regex",
  "num-derive",
  "num-traits",
+ "parity-scale-codec",
  "prost",
  "prost-build",
  "protoc-prebuilt",

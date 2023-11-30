@@ -19,13 +19,15 @@ use alloc::{collections::VecDeque, vec::Vec};
 use risc0_zkp::core::{digest::Digest, hash::sha::Sha256};
 use serde::{Deserialize, Serialize};
 
+use codec::{Encode, Decode};
+
 #[cfg(not(target_os = "zkvm"))]
 use crate::MemoryImage;
 use crate::{tagged_struct, Digestible};
 
 /// Represents the public state of a segment, needed for continuations and
 /// receipt verification.
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Encode, Decode)]
 pub struct SystemState {
     /// The program counter.
     pub pc: u32,

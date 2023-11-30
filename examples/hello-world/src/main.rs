@@ -14,15 +14,21 @@
 
 use hello_world::multiply;
 use hello_world_methods::MULTIPLY_ID;
-
+use codec::{Decode, Encode};
+use risc0_zkvm::Receipt;
 fn main() {
     // Pick two numbers
     let (receipt, _) = multiply(17, 23);
 
+    let encoded = receipt.encode();
+
+    let decoded: Receipt = Decode::decode(&mut &encoded[..]).unwrap();
+
+    // println!("Receipt has {:?}", decoded.inner);
     // Here is where one would send 'receipt' over the network...
 
     // Verify receipt, panic if it's wrong
-    receipt.verify(MULTIPLY_ID).expect(
+    decoded.verify(MULTIPLY_ID).expect(
         "Code you have proven should successfully verify; did you specify the correct image ID?",
     );
 }

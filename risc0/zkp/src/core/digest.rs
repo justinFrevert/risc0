@@ -23,6 +23,8 @@ use hex::{FromHex, FromHexError};
 pub use risc0_zkvm_platform::WORD_SIZE;
 use serde::{Deserialize, Serialize};
 
+use codec::{Encode, Decode};
+
 /// The number of words in the representation of a [Digest].
 pub const DIGEST_WORDS: usize = 8;
 
@@ -37,7 +39,7 @@ pub const DIGEST_BYTES: usize = DIGEST_WORDS * WORD_SIZE;
 /// storage is in u32's in part to simplify alignment requirements, especially
 /// in the zkVM.
 #[derive(
-    Copy, Clone, Eq, Ord, PartialOrd, PartialEq, Hash, Pod, Zeroable, Serialize, Deserialize,
+    Copy, Clone, Eq, Ord, PartialOrd, PartialEq, Hash, Pod, Zeroable, Serialize, Deserialize, Encode, Decode
 )]
 #[repr(transparent)]
 pub struct Digest([u32; DIGEST_WORDS]);

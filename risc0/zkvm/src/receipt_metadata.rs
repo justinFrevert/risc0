@@ -31,13 +31,15 @@ use crate::{
     SystemState,
 };
 
+use codec::{Encode, Decode};
+
 /// Public claims about a zkVM guest execution, such as the journal committed to by the guest.
 ///
 /// Also includes important information such as the exit code and the starting and ending system
 /// state (i.e. the state of memory). [ReceiptMetadata] is a "Merkle-ized struct" supporting
 /// partial openings of the underlying fields from a hash commitment to the full structure. Also
 /// see [MaybePruned].
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct ReceiptMetadata {
     /// The [SystemState] of a segment just before execution has begun.
@@ -113,7 +115,7 @@ impl risc0_binfmt::Digestible for ReceiptMetadata {
 }
 
 /// Indicates how a Segment or Session's execution has terminated
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Encode, Decode)]
 pub enum ExitCode {
     /// This indicates when a system-initiated split has occurred due to the
     /// segment limit being exceeded.
@@ -193,7 +195,7 @@ impl fmt::Display for InvalidExitCodeError {
 impl std::error::Error for InvalidExitCodeError {}
 
 /// Output field in the [ReceiptMetadata], committing to a claimed journal and assumptions list.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Output {
     /// The journal committed to by the guest execution.
@@ -222,7 +224,7 @@ impl risc0_binfmt::Digestible for Output {
 }
 
 /// A list of assumptions, each a [Digest] of a [ReceiptMetadata].
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize, Encode, Decode)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Assumptions(pub Vec<MaybePruned<ReceiptMetadata>>);
 
@@ -332,7 +334,7 @@ impl MaybePruned<Assumptions> {
 /// is a child node. Any field/node in the tree can be opened by providing the Merkle inclusion
 /// proof. When a subtree is pruned, the digest commits to the value of all contained fields.
 /// [ReceiptMetadata] is the motivating example of this type of Merkle-ized struct.
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Encode, Decode)]
 pub enum MaybePruned<T>
 where
     T: Clone + Serialize,

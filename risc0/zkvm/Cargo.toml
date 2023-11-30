@@ -36,6 +36,9 @@ protoc-prebuilt = { git = "https://github.com/risc0/protoc-prebuilt.git", rev = 
 anyhow = { version = "1.0", default-features = false }
 bytemuck = { version = "1.13", features = ["extern_crate_alloc"] }
 cfg-if = "1.0"
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = [
+	"derive",
+] }
 getrandom = { version = "0.2", features = ["custom"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 risc0-binfmt = { workspace = true }
