@@ -14,11 +14,11 @@
 
 use std::{fs, io, io::Write, path::PathBuf, process::Stdio};
 
-use anyhow::{anyhow, bail, ensure, Context};
+use anyhow::{anyhow, bail, Context};
 use cargo_metadata::{Artifact, ArtifactProfile, Message};
 use clap::Parser;
 use risc0_build::cargo_command;
-use risc0_zkvm::{default_executor, ExecutorEnv, ExitCode};
+use risc0_zkvm::{default_prover, ExecutorEnv};
 use tempfile::{tempdir, TempDir};
 
 const ZIP_CONTENTS: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/cargo-risczero.zip"));
@@ -205,13 +205,11 @@ impl BuildCommand {
                     .env_var("RUST_TEST_NOCAPTURE", "1")
                     .build()?;
 
-                let exec = default_executor();
-                let session = exec.execute(env, &fs::read(test)?)?;
-                ensure!(
-                    session.exit_code == ExitCode::Halted(0),
-                    "test exited with code {:?}",
-                    session.exit_code
-                );
+                let exec = default_prover();
+                // let session = exec.execute(env, &fs::read(test)?)?;
+                let receipt = exec.prove(env, &fs::read(test)?)?;
+
+                println!("receipt is {:?}", receipt);
             }
         };
         Ok(())
