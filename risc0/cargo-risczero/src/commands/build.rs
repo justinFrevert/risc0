@@ -18,9 +18,13 @@ use anyhow::{anyhow, bail, Context};
 use cargo_metadata::{Artifact, ArtifactProfile, Message};
 use clap::Parser;
 use risc0_build::cargo_command;
-use risc0_zkvm::{default_prover, ExecutorEnv};
+use risc0_zkvm::{default_prover, ExecutorEnv, compute_image_id};
 use tempfile::{tempdir, TempDir};
-
+use serde::{Deserialize, Serialize};
+use risc0_zkvm::Receipt;
+use risc0_zkvm::sha::Digest;
+use std::path::Path;
+use std::fs::create_dir_all;
 const ZIP_CONTENTS: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/cargo-risczero.zip"));
 
 /// Subcommands of cargo that are supported by this cargo risczero command.
@@ -66,6 +70,30 @@ fn get_zip_file(dir: &TempDir, filename: &str) -> anyhow::Result<PathBuf> {
     let mut dest_file = fs::File::create(&dest_path)?;
     io::copy(&mut file, &mut dest_file)?;
     Ok(dest_path)
+}
+
+#[derive(Serialize, Deserialize)]
+struct ProofData {
+    receipt: Receipt,
+    image_id: Digest,
+}
+
+fn write_proof_to_file(receipt: &Receipt, image_id: &Digest, test: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let proof_filename = format!("{}_proof.json", test);
+    let proof_path = Path::new("./proofs").join(proof_filename);
+
+    println!("Going to write to path {:?}", proof_path);
+
+    let proof_data = ProofData {
+        receipt: receipt.clone(),
+        image_id: *image_id,
+    };
+
+    // println!("Going to write {:?}", serde_json::to_string_pretty(&proof_data));
+
+    fs::write(proof_path, serde_json::to_string_pretty(&proof_data)?)?;
+
+    Ok(())
 }
 
 impl BuildCommand {
@@ -195,7 +223,7 @@ impl BuildCommand {
         // executor and run them.
         if subcommand == BuildSubcommand::Test && !no_run_flag {
             eprintln!("Running tests: {tests:?}");
-
+            create_dir_all("./proofs")?;
             for test in tests {
                 eprintln!("Running test in guest: {test} {test_args:?}");
                 let env = ExecutorEnv::builder()
@@ -207,9 +235,13 @@ impl BuildCommand {
 
                 let exec = default_prover();
                 // let session = exec.execute(env, &fs::read(test)?)?;
-                let receipt = exec.prove(env, &fs::read(test)?)?;
+                let receipt = exec.prove(env, &fs::read(test.clone())?)?;
 
-                println!("receipt is {:?}", receipt);
+                // println!("receipt is {:?}", receipt);
+                let image_id = compute_image_id(&fs::read(test.clone())?)?;
+                // println!("image_id is {:?}", image_id);
+
+                write_proof_to_file(&receipt, &image_id, &test).unwrap();
             }
         };
         Ok(())
